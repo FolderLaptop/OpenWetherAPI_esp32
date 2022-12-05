@@ -57,7 +57,7 @@ void loop() {
         Serial.println("Parsing input failed!");
         return;
       }
-      Serial.print("JSON object = ");
+      Serial.print("JSON ob= ");
       Serial.println(myObject);
       Serial.print("Temperature: ");
       Serial.println(myObject["main"]["temp"]);// Reading in kelvin

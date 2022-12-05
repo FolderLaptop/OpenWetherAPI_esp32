@@ -1,13 +1,12 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <Arduino_JSON.h>
-//Import i2C LCD libraries
-#include <LiquidCrystal_I2C.h>
-int lcdColumns = 16;
-int lcdRows = 2;
-// set LCD address, number of columns and rows
-// if you don't know your display address, run an I2C scanner sketch
-LiquidCrystal_I2C lcd(0x27, lcdColumns, lcdRows);
+
+#include "SPI.h"
+#include "TFT_eSPI.h"
+
+TFT_eSPI myGLCD = TFT_eSPI();       // Invoke custom library
+
 const char* ssid = "xxxxxx";
 const char* password = "xxxxxx";
 //Define API ke
@@ -23,10 +22,12 @@ String jsonBuffer;
 
 void setup() {
   Serial.begin(115200);
-  // initialize LCD
-  lcd.init();
-  // turn on LCD backlight
-  lcd.backlight();
+  myGLCD.init();
+  myGLCD.setRotation(1);
+  myGLCD.fillScreen(TFT_BLACK);
+  pinMode(TFT_BL, OUTPUT);
+  digitalWrite(TF_BL, HIGH);
+  
   WiFi.begin(ssid, password);
   Serial.println("Connecting to WIFI...");
   while (WiFi.status() != WL_CONNECTED) {
@@ -66,18 +67,20 @@ void loop() {
       Serial.println(myObject["main"]["humidity"]);
       Serial.print("Wind Speed: ");
       Serial.println(myObject["wind"]["speed"]);
-      lcd.clear();                            //LCD Printing Temperature
-      lcd.print("T:");
-      lcd.print(myObject["main"]["temp"]);
-      lcd.print("k");
-      lcd.print(" ");
-      lcd.print("H:");                       //LCD Printing Humidity
-      lcd.print(myObject["main"]["humidity"]);
-      lcd.print("%");
-      lcd.setCursor(0, 1);                    //Printing Pressure
-      lcd.print("P:");
-      lcd.print(myObject["main"]["pressure"]);
-      lcd.print(" hPa");
+      
+      myGLCD.fillScreen(TFT_BLACK);
+      myGLCD.setTextColor(TFT_WHITE,TFT_BLACK);
+      myGLCD.setTextDatum(TC_DATUM);
+      
+      myGLCD.drawString("T:",20,10,2);
+      myGLCD.drawNumber(myObject["main"]["temp"],30,10,2);
+      myGLCD.drawString("k",33,10,2);
+      myGLCD.drawString("H:",20,20,2);                       //LCD Printing Humidity
+      myGLCD.drawNumber(myObject["main"]["humidity"],30,20,2);
+      myGLCD.drawString("%",33,20,2);
+      myGLCD.drawString("P:"20,30,2);
+      myGLCD.drawNumber(myObject["main"]["pressure"],30,30,2);
+      myGLCD.drawString(" hPa",33,30,2);
     }
     else {
       Serial.println("WiFi Disconnected");
